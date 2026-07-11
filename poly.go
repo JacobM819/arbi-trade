@@ -68,24 +68,31 @@ type GammaMarket struct {
 	Closed      bool   `json:"closed"`
 }
 
-// searchPolymarketMarkets queries Gamma to find condition IDs programmatically
-func searchPolymarketMarkets(searchTerm string) ([]GammaMarket, error) {
+func searchPolymarketMarkets(sportsNames []string, searchTerm string) ([]GammaMarket, error) {
+	// searchPolymarketMarkets queries Gamma to find condition IDs programmatically
+
 	client := &http.Client{Timeout: 10 * time.Second}
 
 	baseURL := "https://gamma-api.polymarket.com/markets"
-	
+
 	params := url.Values{}
-	params.Add("search", searchTerm)
+	if searchTerm != "" {
+		params.Add("search", searchTerm)
+	}
 	params.Add("active", "true")
 	params.Add("closed", "false")
-	
+
+	for _, s := range sportsNames {
+		params.Add("tag_id", sports[s])
+	}
+
 	fullURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
 
 	req, _ := http.NewRequest(http.MethodGet, fullURL, nil)
 	req.Header.Set("Accept", "application/json")
 
 	fmt.Printf("Searching Gamma API for: '%s'...\n", searchTerm)
-	
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -94,12 +101,12 @@ func searchPolymarketMarkets(searchTerm string) ([]GammaMarket, error) {
 
 	if resp.StatusCode == 200 {
 		body, _ := io.ReadAll(resp.Body)
-		
+
 		var markets []GammaMarket
 		if err := json.Unmarshal(body, &markets); err != nil {
 			return nil, fmt.Errorf("failed to parse Gamma JSON: %w", err)
 		}
-		
+
 		return markets, nil
 	}
 

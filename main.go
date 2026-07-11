@@ -62,9 +62,7 @@ func main() {
 
 	// Polymarket: find markets
 
-	searchQuery := "Brewers"
-
-	markets, err := searchPolymarketMarkets(searchQuery)
+	markets, err := searchPolymarketMarkets([]string{"UFC"}, "")
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		return
@@ -79,7 +77,6 @@ func main() {
 	fmt.Printf("\nFound %d active markets:\n", len(markets))
 	fmt.Println("--------------------------------------------------")
 	for _, m := range markets {
-		// In a real bot, you would pass m.ConditionID directly to your CLOB function here
 		fmt.Printf("Question: %s\n", m.Question)
 		fmt.Printf("Condition ID: %s\n\n", m.ConditionID)
 
