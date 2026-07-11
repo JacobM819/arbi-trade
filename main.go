@@ -29,11 +29,10 @@ func main() {
 	// 	fmt.Println(output)
 	// }
 
-	// Polymarket
+	// Polymarket: get odds from a given market
 
 	client := NewClobClient("")
 
-	// Example target: Replace with an active Token ID
 	testTokenID := "89453416559360575370389185597493481042047220643472797002101793932914111599485"
 
 	// Fetch 1: Midpoint (Implied Probability)
@@ -58,6 +57,38 @@ func main() {
 		}
 		for i := 0; i < limit; i++ {
 			fmt.Printf("Price: %s | Available Size: %s shares\n", orderBook.Asks[i].Price, orderBook.Asks[i].Size)
+		}
+	}
+
+	// Polymarket: find markets
+
+	searchQuery := "Brewers"
+
+	markets, err := searchPolymarketMarkets(searchQuery)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
+
+	if len(markets) == 0 {
+		fmt.Println("No active markets found for that search term.")
+		return
+	}
+
+	// Print the discovered Condition IDs
+	fmt.Printf("\nFound %d active markets:\n", len(markets))
+	fmt.Println("--------------------------------------------------")
+	for _, m := range markets {
+		// In a real bot, you would pass m.ConditionID directly to your CLOB function here
+		fmt.Printf("Question: %s\n", m.Question)
+		fmt.Printf("Condition ID: %s\n\n", m.ConditionID)
+
+		market, err := getPolymarketMarket(m.ConditionID)
+
+		if err != nil {
+			fmt.Printf("Error fetching midpoint: %v\n", err)
+		} else {
+			fmt.Printf("%+v\n", market)
 		}
 	}
 }
